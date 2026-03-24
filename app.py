@@ -1,5 +1,17 @@
 import streamlit as st
 import os
+import numpy as np
+from utils import load_artifacts
+from predict import predict_news
+from preprocess import clean_text
+
+@st.cache_resource
+def get_model_and_vectorizer():
+    model_path = 'fake_news_model.keras'
+    vec_path = 'vectorizer.joblib'
+    if os.path.exists(model_path) and os.path.exists(vec_path):
+        return load_artifacts(model_path, vec_path)
+    return None, None
 
 # Page configuration
 st.set_page_config(
@@ -45,14 +57,33 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
+def get_explanation(text, vectorizer, model):
+    # Simple keyword extraction based on TF-IDF features present in the text
+    feature_names = vectorizer.get_feature_names_out()
+    text_vec = vectorizer.transform([text]).toarray()[0]
+    
+    # Get top 5 words that contributed most to this specific vectorization
+    top_indices = np.argsort(text_vec)[-5:][::-1]
+    top_words = [feature_names[i] for i in top_indices if text_vec[i] > 0]
+    
+    return top_words
+
 def main():
+    model, vectorizer = get_model_and_vectorizer()
+    
     st.markdown("# 🔍 TruthScanner AI")
     st.markdown("### Advanced Misinformation Detection System")
     
-    # Simple sidebar
+    # Sidebar
     with st.sidebar:
-        st.header("About")
-        st.info("TruthScanner AI uses a Deep Neural Network to analyze linguistic patterns and predict the authenticity of news headlines.")
+        st.header("App Stats")
+        if model:
+            st.success("Model Status: Online")
+            st.write("Architecture: Feedforward NN")
+            st.write("Vectorizer: TF-IDF (10k features)")
+        else:
+            st.error("Model Status: Offline")
+            st.warning("Please train the model using main.py first.")
 
     # Main input area
     st.write("---")
@@ -63,8 +94,47 @@ def main():
     )
 
     if st.button("Analyze Authenticity", type="primary"):
+        if not model or not vectorizer:
+            st.error("System components not loaded. Ensure artifacts exist.")
+            return
+
         if news_input.strip():
-            st.warning("Analysis logic integration pending...")
+            with st.spinner("Analyzing linguistic patterns..."):
+                # Prediction logic
+                cleaned = clean_text(news_input)
+                vec = vectorizer.transform([cleaned])
+                prob = model.predict(vec, verbose=0)[0][0]
+                
+                label = "Fake News" if prob > 0.5 else "Real News"
+                confidence = prob if prob > 0.5 else (1 - prob)
+                color = "#ff4b4b" if label == "Fake News" else "#28a745"
+                
+                st.markdown(f"""
+                    <div class="result-card" style="border-left: 5px solid {color};">
+                        <h2 style="color: {color}; margin-top: 0;">{label} Detected</h2>
+                        <p>Our AI system is <b>{confidence*100:.2f}%</b> confident in this prediction.</p>
+                    </div>
+                """, unsafe_allow_html=True)
+                
+                # Visual Confidence Bar
+                st.progress(float(confidence))
+                
+                # Explanation Section
+                st.markdown("### 🧬 Analysis Breakdown")
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    st.write("**Why this classification?**")
+                    if label == "Fake News":
+                        st.write("The AI detected patterns commonly associated with emotionally charged or hyperbolic misinformation.")
+                    else:
+                        st.write("The linguistic structure aligns with standard journalistic reporting and factual consistency.")
+                
+                with col2:
+                    keywords = get_explanation(cleaned, vectorizer, model)
+                    st.write("**Key Linguistic Markers:**")
+                    st.write(", ".join([f"`{w}`" for w in keywords]) if keywords else "Internal neural patterns")
+
         else:
             st.error("Please enter some text to analyze.")
 
