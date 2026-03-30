@@ -84,6 +84,15 @@ def main():
         else:
             st.error("Model Status: Offline")
             st.warning("Please train the model using main.py first.")
+        
+        st.write("---")
+        st.header("📜 Analysis History")
+        if 'history' not in st.session_state:
+            st.session_state.history = []
+        
+        for item in st.session_state.history[-5:]:
+            with st.expander(f"{item['label']} ({item['conf']:.1%})"):
+                st.write(f"*{item['text'][:100]}...*")
 
     # Main input area
     st.write("---")
@@ -108,6 +117,13 @@ def main():
                 label = "Fake News" if prob > 0.5 else "Real News"
                 confidence = prob if prob > 0.5 else (1 - prob)
                 color = "#ff4b4b" if label == "Fake News" else "#28a745"
+                
+                # Update history
+                st.session_state.history.append({
+                    'label': label,
+                    'conf': confidence,
+                    'text': news_input
+                })
                 
                 st.markdown(f"""
                     <div class="result-card" style="border-left: 5px solid {color};">
