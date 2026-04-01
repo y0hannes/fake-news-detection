@@ -15,11 +15,15 @@ def get_model_and_vectorizer():
 
 # Page configuration
 st.set_page_config(
-    page_title="TruthScanner AI",
+    page_title="TruthScanner AI | Fake News Detection",
     page_icon="🔍",
     layout="wide",
     initial_sidebar_state="expanded",
 )
+
+# Meta Information for SEO (Manual injection for UI feel)
+st.title("🛡️ TruthScanner AI")
+st.caption("Empowering users with Neural Network-driven misinformation detection.")
 
 # Custom CSS for Premium Look
 st.markdown("""
@@ -150,6 +154,22 @@ def main():
                     keywords = get_explanation(cleaned, vectorizer, model)
                     st.write("**Key Linguistic Markers:**")
                     st.write(", ".join([f"`{w}`" for w in keywords]) if keywords else "Internal neural patterns")
+                
+                # Download Report
+                report = f"""TRUTHSCANNER AI - ANALYSIS REPORT
+----------------------------------
+News Input: {news_input}
+Result: {label}
+Confidence: {confidence*100:.2f}%
+Keywords: {', '.join(keywords) if keywords else 'N/A'}
+Date: {np.datetime64('now')}
+"""
+                st.download_button(
+                    label="📥 Download Analysis Report",
+                    data=report,
+                    file_name="truthscanner_report.txt",
+                    mime="text/plain",
+                )
 
         else:
             st.error("Please enter some text to analyze.")
