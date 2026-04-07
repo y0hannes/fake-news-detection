@@ -163,19 +163,36 @@ These examples demonstrate how the trained neural network can analyze unseen hea
 ## Project Structure
 
 ```
-fake-news-detection-nn/
-│
-├── fake_news_detector.ipynb
-├── data_loader.py
-├── preprocess.py
-├── model.py
-├── app.py                   # Streamlit Web Application
-├── main.py
-├── images/
-│   ├── accuracy.png
-│   └── loss.png
-│
-└── README.md
+fake-news-detection/
+├── app/                     # Source code directory
+│   ├── app.py               # Streamlit application
+│   ├── main.py              # CLI orchestration script
+│   ├── model.py             # Neural Network architecture
+│   ├── preprocess.py        # Text cleaning and vectorization
+│   ├── data_loader.py       # Data loading utilities
+│   ├── train.py             # Training loop logic
+│   ├── evaluate.py          # Evaluation metrics and plotting
+│   └── utils.py             # Artifact persistence (save/load)
+├── requirements.txt         # Project dependencies
+├── runtime.txt              # Python version (3.11)
+├── README.md
+└── .gitignore
+```
+
+---
+
+## How to Run
+
+### 1. Training the Model
+To train the model from the root directory, run:
+```bash
+python -m app.main path/to/your/dataset.csv
+```
+
+### 2. Running the Web App
+To start the TruthScanner AI interface:
+```bash
+streamlit run app/app.py
 ```
 
 ---
