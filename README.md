@@ -169,9 +169,8 @@ fake-news-detection-nn/
 ├── data_loader.py
 ├── preprocess.py
 ├── model.py
-├── train.py
-├── predict.py
-│
+├── app.py                   # Streamlit Web Application
+├── main.py
 ├── images/
 │   ├── accuracy.png
 │   └── loss.png

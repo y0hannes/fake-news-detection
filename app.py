@@ -75,9 +75,6 @@ def get_explanation(text, vectorizer, model):
 def main():
     model, vectorizer = get_model_and_vectorizer()
     
-    st.markdown("# 🔍 TruthScanner AI")
-    st.markdown("### Advanced Misinformation Detection System")
-    
     # Sidebar
     with st.sidebar:
         st.header("App Stats")
